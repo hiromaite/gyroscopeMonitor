@@ -4,10 +4,17 @@
 AXP192 Axp;
 
 float accX, accY, accZ;
-float gyroX, gyroY, gyroZ;
-float pitch, roll, yaw;
-float my_pitch;
+float myPitch, myRoll;
+float avePitch, aveRoll;
+int numAve = 30;
+float listPitch[30], listRoll[30];
 float temp;
+
+void vibrate(int sec = 0.1) {
+  Axp.SetLDOEnable(3, true);
+  delay(sec);
+  Axp.SetLDOEnable(3, false);
+}
 
 void setup() {
   M5.begin();
@@ -20,14 +27,35 @@ void setup() {
 void loop() {
   M5.update();
   // data acquisition
-  M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
   M5.IMU.getAccelData(&accX, &accY, &accZ);
-  M5.IMU.getAhrsData(&pitch, &roll, &yaw);
   M5.IMU.getTempData(&temp);
-  my_pitch = atan(-accX / sqrtf(accY * accY + accZ * accZ)) * RAD_TO_DEG;
 
+  // calcurate pitch
+  myPitch = atan2(-accZ, sqrtf(accY * accY + accX * accX)) * RAD_TO_DEG;
+  myRoll = atan2(accY, accX) * RAD_TO_DEG;
+
+  // calcurate average
+  float sumPitch = 0;
+  float sumRoll = 0;
+  for (int i = numAve - 1; i > 0; i--) {
+    listPitch[i] = listPitch[i - 1];
+    listRoll[i] = listRoll[i - 1];
+    sumPitch += listPitch[i - 1];
+    sumRoll += listRoll[i - 1];
+  }
+  listPitch[0] = myPitch;
+  listRoll[0] = myRoll;
+  avePitch = (sumPitch + listPitch[0]) / float(numAve);
+  aveRoll = (sumRoll + listRoll[0]) / float(numAve);
+
+  // feedback via LCD
   M5.Lcd.setCursor(0, 0);
-  M5.Lcd.printf("Pitch : %.2f deg\n", my_pitch);
-  M5.Lcd.printf("Temp. : %.2f deg.C", temp);
-  delay(1000);
+  M5.Lcd.print("ADC via. 30fps");
+  M5.Lcd.printf("Pitch: %3.1f deg.\n", myPitch);
+  M5.Lcd.printf("Roll: %3.1f deg.\n\n", myRoll);
+  M5.Lcd.print("Average at 30sps");
+  M5.Lcd.printf("Pitch: %3.1f deg.\n", avePitch);
+  M5.Lcd.printf("Roll: %3.1f deg.\n", aveRoll);
+  //vibrate(abs(aveRoll));
+  delay(1000 / numAve);
 }
