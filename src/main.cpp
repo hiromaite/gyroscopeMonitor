@@ -6,13 +6,15 @@ AXP192 Axp;
 float accX, accY, accZ;
 float myPitch, myRoll;
 float avePitch, aveRoll;
-int numAve = 30;
+int numAve = 10;
 float listPitch[30], listRoll[30];
+/* float* listPitch = new float(numAve);
+float* listRoll = new float(numAve); */
 float temp;
 
-void vibrate(int sec = 0.1) {
+void vibrate(int msec = 100) {
   Axp.SetLDOEnable(3, true);
-  delay(sec);
+  delay(msec);
   Axp.SetLDOEnable(3, false);
 }
 
@@ -20,8 +22,6 @@ void setup() {
   M5.begin();
   M5.IMU.Init();
   M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setTextSize(3);
-
 }
 
 void loop() {
@@ -49,11 +49,15 @@ void loop() {
   aveRoll = (sumRoll + listRoll[0]) / float(numAve);
 
   // feedback via LCD
+  M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 0);
-  M5.Lcd.print("ADC via. 30fps");
+  M5.Lcd.printf("%3.4f V %3.1f %%\n\n", Axp.GetBatVoltage(), Axp.GetBatteryLevel());
+
+  M5.Lcd.setTextSize(3);
+  M5.Lcd.print("ADC via. 10 fps\n");
   M5.Lcd.printf("Pitch: %3.1f deg.\n", myPitch);
   M5.Lcd.printf("Roll: %3.1f deg.\n\n", myRoll);
-  M5.Lcd.print("Average at 30sps");
+  M5.Lcd.print("Average at 10 sps\n");
   M5.Lcd.printf("Pitch: %3.1f deg.\n", avePitch);
   M5.Lcd.printf("Roll: %3.1f deg.\n", aveRoll);
   //vibrate(abs(aveRoll));
