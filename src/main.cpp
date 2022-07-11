@@ -20,7 +20,7 @@ void vibrate(int msec = 100) {
 
 void setup() {
   M5.begin();
-  M5.IMU.Init();
+  M5.IMU.Init();  // To use Port A, change the source file; "MPU6886.cpp" to use wire(32, 33) instead of wire1(21, 22) for I2C communication.
   M5.Lcd.fillScreen(BLACK);
 }
 
@@ -28,7 +28,6 @@ void loop() {
   M5.update();
   // data acquisition
   M5.IMU.getAccelData(&accX, &accY, &accZ);
-  M5.IMU.getTempData(&temp);
 
   // calcurate pitch
   myPitch = atan2(-accZ, sqrtf(accY * accY + accX * accX)) * RAD_TO_DEG;
