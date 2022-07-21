@@ -30,8 +30,8 @@ void loop() {
   M5.IMU.getAccelData(&accX, &accY, &accZ);
 
   // calcurate pitch
-  myPitch = atan2(-accZ, sqrtf(accY * accY + accX * accX)) * RAD_TO_DEG;
-  myRoll = atan2(accY, accX) * RAD_TO_DEG;
+  myPitch = atan2(accX, sqrtf(accY * accY + accZ * accZ)) * RAD_TO_DEG;
+  myRoll = atan2(accY, -accZ) * RAD_TO_DEG;
 
   // calcurate average
   float sumPitch = 0;
